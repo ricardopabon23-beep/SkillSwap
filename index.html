@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SkillSwap | Learn. Share. Connect.</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- ===============================
+         Navigation Bar
+         =============================== -->
+
+    <header>
+        <nav class="navbar">
+
+            <div class="logo">
+                <a href="index.html">SkillSwap</a>
+            </div>
+
+            <ul class="nav-links">
+                <li>
+                    <a href="#home" id="nav-home-button">Home</a>
+                </li>
+
+                <li id="dashboard-nav" hidden>
+                    <a href="#user-dashboard">Dashboard</a>
+                </li>
+
+                <li id="browse-skills-nav" hidden>
+                    <a href="#browse-skills">Browse Skills</a>
+                </li>
+
+                <li>
+                    <a href="#how-it-works">How It Works</a>
+                </li>
+
+                <li>
+                    <a href="#about">About</a>
+                </li>
+            </ul>
+
+            <div class="nav-buttons">
+                <a href="#" class="login-button" id="login-button">Log In</a>
+                <a href="#" class="signup-button" id="signup-button">Sign Up</a>
+                <a href="#" class="login-button" id="logout-button" hidden>Log Out</a>
+            </div>
+
+        </nav>
+    </header>
+
+
+    <!-- ===============================
+         Main Content
+         =============================== -->
+
+    <main>
+
+    <!-- ===============================
+     Hero Section
+     ================================ -->
+
+<section id="home" class="hero">
+
+    <div class="hero-content">
+
+        <h1>Learn. Share. Connect.</h1>
+
+        <p>
+            SkillSwap is a community where people can share
+            their knowledge, learn new skills, and connect
+            with others who have similar interests.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="#" class="primary-button" id="find-skill-button">
+                Find a Skill
+            </a>
+
+            <a href="#" class="secondary-button" id="share-skill-button">
+                Share Your Skill
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="hero-image">
+    <img
+        src="images/skill-sharing.jpg"
+        alt="Students collaborating and sharing knowledge"
+    >
+</div>
+
+</section>  <!-- closes hero section -->
+
+<!-- ===============================
+         Sign Up Form
+         =============================== -->
+
+<section id="signup-section" class="signup-section">
+
+    <div class="signup-form">
+
+        <h2>Create Your Account</h2>
+
+        <p>
+            Join SkillSwap and start learning and sharing skills 
+            with the community.
+        </p>
+
+    <input
+        type="text"
+        id="signup-name"
+        placeholder="Full name"
+    >
+
+    <input
+        type="email"
+        id="signup-email"
+        placeholder="Email address"
+        >
+
+    <input
+        type="password"
+        id="signup-password"
+        placeholder="Password"
+    >
+
+    <button id="create-account-button">
+        Create Account
+    </button>
+    
+    <div id="signup-result"></div>
+    
+    <button type="button" id="go-to-login-button" hidden>
+        Go to Log In
+    </button>
+    
+</div>
+</section>
+
+<!-- ===============================
+     Log In Form
+     ================================ -->
+
+<section id="login-section" class="login-section">
+
+        <div class="login-form">
+
+            <h2>Welcome Back</h2>
+
+            <p>
+                Log in to your SkillSwap account.
+            </p>
+
+            <input
+                type="email"
+                id="login-email"
+                placeholder="Email address"
+            >
+
+            <input
+                type="password"
+                id="login-password"
+                placeholder="Password"
+            >
+
+            <button id="login-submit-button">
+                Log In
+            </button>
+
+            <div id="login-result"></div>
+
+        </div>
+    
+</section>
+
+<!-- ===============================
+     User Dashboard
+     ================================ -->
+
+<section id="user-dashboard" class="user-dashboard">
+
+        <div class="dashboard-content">
+
+            <h2>My Dashboard</h2>
+
+            <p>
+                Manage your SkillSwap profile, skills, and connections.
+            </p>
+
+            <div class="dashboard-cards">
+
+                <div class="dashboard-card" id="profile-card">
+
+                <h3>My Profile</h3>
+
+                <p>
+                    View and manage your SkillSwap profile information.
+                </p>
+
+            </div>
+
+            <div class="dashboard-card" id="my-connections-card">
+
+                <h3>My Connections</h3>
+
+                <p>
+                    View and manage the people you have connected with on SkillSwap.
+                </p>
+
+            </div>
+
+            <div class="dashboard-card" id="my-skills-card">
+
+                <h3>My Skills</h3>
+
+                <p>
+                    View the skills you can teach and the skills you want to learn.
+                </p>
+
+            </div>
+
+            <div class="dashboard-card" id="notifications-card">
+
+                <h3>
+                    Notifications
+                    <span id="notification-count" class="notification-count" hidden>0</span>
+                </h3>
+
+                <p>
+                    View connection requests and other SkillSwap notifications.
+                </p>
+
+            </div>
+
+        </div> <!-- closes dashboard-cards --> 
+
+        <!-- Dashboard Quick Actions -->
+        <div class="dashboard-actions">
+
+            <h3>What would you like to do today?</h3>
+
+            <p>
+                Discover new skills or share your knowledge with other students.
+            </p>
+
+            <div class="dashboard-action-buttons">
+                <button type="button" id="dashboard-find-skill">
+                    Find a Skill
+                </button>
+
+            <button type="button" id="dashboard-share-skill">
+                Share Your Skill
+            </button>
+        </div>
+
+    </div>
+        
+        <!-- Dashboard Form Area -->
+        <div class="dashboard-form-area">
+
+            <!-- Find a Skill Form -->
+
+        <div id="skill-search" class="skill-search" hidden>
+
+            <h2>Find Your Skill</h2>
+
+            <input
+                type="text"
+                id="skill-input"
+                placeholder="What skill do you want to learn?"
+            >
+
+            <button id="search-button">
+                Search
+            </button>
+
+            <button id="clear-search-button">
+                Clear
+            </button>
+
+            <div id="search-result"></div>
+
+            <div id="match-result"></div>
+
+            <div id="profile-result"></div>
+
+        </div>
+        <!-- Share Your Skill Form -->
+
+        <div id="share-skill-form" class="share-skill-form">
+
+            <h2>Share Your Skill</h2>
+
+            <input
+                type="text"
+                id="name-input"
+                placeholder="Your name"
+            >
+
+            <input
+                type="text"
+                id="skill-share-input"
+                placeholder="What skill can you teach?"
+            >
+
+            <textarea
+                id="bio-input"
+                maxlength="200"
+                placeholder="Tell us a little bit about your skill..."
+            ></textarea>
+
+            <p id="bio-counter">0 /200 characters</p>
+
+            <button id="submit-skill-button">
+                Share Skill
+            </button>
+
+            <button type="button" id="clear-share-skill-button">
+                Clear
+            </button>
+
+            <div id="share-result"></div>
+
+        </div>
+
+    </div>
+
+        <div id="dashboard-profile" class="dashboard-profile"></div>
+
+    </div>
+
+</section>
+
+
+    <!-- ===============================
+         Browse Skills Section
+         =============================== -->
+
+         <section id="browse-skills" class="browse-skills" hidden>
+
+            <h2>Browse Skills</h2>
+
+            <p>
+                Explore skills shared by members of the SkillSwap community.
+            </p>
+
+            <div id="skills-container" class="skills-container">
+
+            </div>
+
+         </section>
+
+    <!-- ===============================
+         About Section
+    ==================================== -->
+
+    <section id="about" class="about">
+
+        <div class="about-content">
+
+            <h2>About SkillSwap</h2>
+
+            <p>
+                SkillSwap is a community-driven platform designed to connect
+                people who want to learn new skills with people who are willing 
+                to share their knowledge.
+            </p>
+
+            <p>
+                Whether you want to learn programming, photography, design,
+                music, or another skill, SkillSwap makes it easier to discover 
+                people in the community who can help you learn and grow.
+            </p>
+        </div>
+    </section>
+
+    <!-- ===============================
+         How It Works Section 
+         =============================== -->
+
+        <section id="how-it-works" class="how-it-works">
+
+            <div class="section-heading">
+
+                <h2>How SkillSwap Works</h2>
+
+                <p>
+                    Learning and sharing skills is simple.
+                </p>
+
+            </div>
+
+
+            <div class="steps">
+
+    <!-- ===============================
+         Step 1 
+         =============================== -->
+
+                <div class="step">
+
+                    <div class="step-number">
+                        1
+                    </div>
+
+                    <h3>Create Your Profile</h3>
+
+                    <p>
+                        Tell the SkillSwap community about yourself
+                        and the skills you know or want to learn.
+                    </p>
+
+                </div>
+
+
+    <!-- =============================== 
+         Step 2
+         =============================== -->
+
+                <div class="step">
+
+                    <div class="step-number">
+                        2
+                    </div>
+
+                    <h3>Find a Match</h3>
+
+                    <p>
+                        Discover people who have the skills you want
+                        to learn or who are interested in your skills.
+                    </p>
+
+                </div>
+
+
+    <!-- ===============================
+         Step 3 
+         =============================== -->
+
+                <div class="step">
+
+                    <div class="step-number">
+                        3
+                    </div>
+
+                    <h3>Connect & Learn</h3>
+
+                    <p>
+                        Connect with other members and start
+                        exchanging knowledge and skills.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    <!-- =============================== 
+         Skill Match Section 
+         ===============================-->
+
+        <section id="skill-match" class="skill-match" hidden>
+
+            <div class="match-content">
+
+                <h2>Find Your Skill Match</h2>
+
+                <p>
+                    SkillSwap helps you discover people based on
+                    the skills you want to learn and the skills
+                    you can share.
+                </p>
+
+                <a href="#" class="primary-button" id="explore-matches-button">
+                    Explore Skill Matches
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ===============================
+         Footer
+         =============================== -->
+
+    <footer>
+
+        <div class="footer-content">
+
+    <!-- ===============================
+         Footer Brand 
+         =============================== -->
+
+            <div class="footer-brand">
+
+                <h3>SkillSwap</h3>
+
+                <p>
+                    Learn from others. Share what you know.
+                    Grow together.
+                </p>
+
+            </div>
+
+
+    <!-- ===============================
+         SkillSwap Links 
+         =============================== -->
+
+            <div class="footer-links">
+
+                <h4>SkillSwap</h4>
+
+                <a href="#about">About</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#browse-skills" id="footer-browse-skills" hidden>Browse Skills</a>
+            </div>
+
+
+    <!-- ===============================
+         Account Links 
+         =============================== -->
+
+            <div class="footer-links">
+
+                <h4>Account</h4>
+
+                <a href="#" id="footer-login-button">Log In</a>
+                <a href="#" id=footer-signup-button>Sign Up</a>
+                <a href="#" id="footer-logout-button" hidden>Log Out</a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <a href="#" id="footer-home-button">Home</a>
+            
+            <p>&copy; 2026 SkillSwap. All rights reserved.</p>
+
+            <p class="photo-credit">
+                Homepage photo by
+                <a href="https://www.pexels.com/photo/colleagues-sitting-with-laptops-by-table-at-office-16420344/"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    Ludovic Delot / Pexels
+                </a>
+            </p>
+
+        </div>
+
+    </footer>
+
+<script src="js/script.js"></script>
+
+</body>
+
+</html>
