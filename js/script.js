@@ -32,6 +32,31 @@ const exploreMatchesButton = document.getElementById("explore-matches-button");
 const browseSkillsNav = document.getElementById("browse-skills-nav");
 const footerBrowseSkills = document.getElementById("footer-browse-skills");
 const dashboardNav = document.getElementById("dashboard-nav");
+const navbarUserName = document.getElementById("navbar-user-name");
+
+function updateNavbarUserName() {
+    const activeUser = sessionStorage.getItem("skillswapActiveUser");
+
+    const accounts = JSON.parse(
+        localStorage.getItem("skillswapAccounts") || "[]"
+    );
+
+    const account = accounts.find(function(account) {
+        return account.email === activeUser;
+    });
+
+    const savedProfile = activeUser
+    ? JSON.parse(localStorage.getItem("skillswapProfile_" + activeUser) || "{}")
+    : {};
+
+navbarUserName.textContent =
+    activeUser && account
+        ? (savedProfile.name || account.name)
+        : "SkillSwap";
+}
+
+updateNavbarUserName();
+
 const signupButton = document.getElementById("signup-button");
 const footerSignupButton = document.getElementById("footer-signup-button");
 const signupSection = document.getElementById("signup-section");
@@ -57,8 +82,7 @@ const loginResult = document.getElementById("login-result");
 const userDashboard = document.getElementById("user-dashboard");
 
 // Track whether the student is logged in
-let isLoggedIn = false;
-
+let isLoggedIn = sessionStorage.getItem("skillswapLoggedIn") === "true";
 // =====================================
 // Find Skill and Share Skill Buttons
 // =====================================
@@ -190,10 +214,33 @@ loginSubmitButton.addEventListener("click", function() {
         return;
     }
 
+    // Check whether the email belongs to a registered account
+    const matchingAccount = registeredAccounts.find(function (account) {
+        return account.email === email.toLowerCase();
+    });
+
+    if (!matchingAccount) {
+        loginResult.textContent = "No account found with this email address.";
+        loginResult.className = "error";
+        return;
+    }
+
     loginResult.textContent = "Login information accepted.";
     loginResult.className = "success";
 
     isLoggedIn = true;
+    sessionStorage.setItem("skillswapLoggedIn", "true");
+
+    // Remember the active demonstration account
+    sessionStorage.setItem("skillswapActiveUser", matchingAccount.email);
+
+    // Load connections belonging to this account
+    loadConnections();
+    loadNotifications();
+    updateNotificationCount();
+
+    updateNavbarUserName();
+
     loginSection.style.display = "none";
     heroSection.style.display = "none";
     
@@ -223,6 +270,13 @@ loginSubmitButton.addEventListener("click", function() {
 
 logoutButton.addEventListener("click", function(event) {
     event.preventDefault();
+
+    isLoggedIn = false;
+    sessionStorage.removeItem("skillswapLoggedIn");
+
+    // Clear the active demonstration account
+    sessionStorage.removeItem("skillswapActiveUser");
+
     window.location.reload();
 });
 
@@ -252,36 +306,79 @@ const currentProfile = {
     bio: "No bio added yet"
 };
 
+const savedProfile = sessionStorage.getItem("skillswapProfile");
+
+if (savedProfile) {
+    Object.assign(currentProfile, JSON.parse(savedProfile));
+}
+
 // =====================================
-// Connection Data
+// Connection Storage for Active Account
 // =====================================
 
-// Sarah is a sample incoming connection request.
-// Connection information is currently temporary.
+function getConnectionStorageKey() {
+    const activeUser =
+        sessionStorage.getItem("skillswapActiveUser");
 
-const connections = [
-    {
-        name: "Sarah",
-        skill: "Graphic Design",
-        status: "pending",
-        direction: "incoming"
-    },
-    {
-        name: "Alex",
-        skill: "Java",
-        status: "accepted",
-        direction: "outgoing"
-    }
-];
+    return activeUser
+        ? "skillswapConnections_" + activeUser
+        : null;
+}
 
-// Temporary notifications for accepted connection requests
-const acceptedRequestNotifications = [
-    {
-        name: "Alex",
-        skill: "Java",
-        read: false
+// Connection data for the active account
+let connections = [];
+
+// Load connections for the currently logged-in account
+function loadConnections() {
+    const connectionStorageKey = getConnectionStorageKey();
+
+    connections = connectionStorageKey
+        ? JSON.parse(localStorage.getItem(connectionStorageKey) || "[]")
+        : [];
+}
+
+// Restore saved connections when the page loads
+loadConnections();
+
+// =====================================
+// Save Connections for Active Account
+// =====================================
+
+function saveConnections() {
+    const connectionStorageKey = getConnectionStorageKey();
+
+    if (!connectionStorageKey) {
+        return;
     }
-];
+
+    localStorage.setItem(
+        connectionStorageKey,
+        JSON.stringify(connections)
+    );
+    
+}
+
+// =====================================
+// Notification Request Section
+// =====================================
+let acceptedRequestNotifications = [];
+
+function loadNotifications() {
+    const activeUser = sessionStorage.getItem("skillswapActiveUser");
+
+    if (!activeUser) {
+        acceptedRequestNotifications = [];
+        return;
+    }
+
+    const notificationsStorageKey = "skillswapNotifications_" + activeUser;
+
+    acceptedRequestNotifications = JSON.parse(
+        localStorage.getItem(notificationsStorageKey) || "[]"
+    );
+}
+
+loadNotifications();
 
 // =====================================
 // Display Profile Information
@@ -366,9 +463,8 @@ function openEditProfile() {
 // =====================================
 
 profileCard.addEventListener("click", function() {
-    displayProfile();
+    window.location.href = "profile.html";
 });
-
 
 // =====================================
 // Edit Skills Form
@@ -419,7 +515,7 @@ function displayMySkills() {
 // =====================================
 
 mySkillsCard.addEventListener("click", function() {
-    displayMySkills();
+    window.location.href = "skills.html";
 });
 
 
@@ -428,7 +524,7 @@ mySkillsCard.addEventListener("click", function() {
 // =====================================
 
 myConnectionsCard.addEventListener("click", function() {
-    displayMyConnections();
+    window.location.href = "connections.html";
 });
 
 
@@ -509,8 +605,8 @@ function updateNotifications() {
         viewRequest.className = "notification-action";
 
         viewRequest.addEventListener("click", function() {
-            displayMyConnections();
-        });
+    window.location.href = "connections.html";
+});
 
         paragraph.appendChild(viewRequest);
         notificationsList.appendChild(paragraph);
@@ -535,8 +631,8 @@ function updateNotifications() {
             viewConnection.textContent = "View connection →";
             viewConnection.className = "notification-action";
 
-            viewConnection.addEventListener("click", function() {
-                displayMyConnections();
+           viewConnection.addEventListener("click", function() {
+                window.location.href = "connections.html";
             });
 
             paragraph.appendChild(viewConnection);
@@ -568,25 +664,8 @@ function updateNotifications() {
 // =====================================
 
 notificationsCard.addEventListener("click", function() {
-    displayNotifications();
+    window.location.href = "notifications.html";
 });
-
-// =====================================
-// Display My Connections
-// =====================================
-
-function displayMyConnections() {
-
-    dashboardProfile.innerHTML =
-        "<h3>My Connections</h3>" +
-        "<p>Manage your SkillSwap connections here.</p>" +
-        "<h4>Pending Requests</h4>" +
-        "<div id='pending-connections'><p>No pending requests.</p></div>" +
-        "<h4>Accepted Connections</h4>" +
-        "<div id='accepted-connections'><p>No accepted connections yet.</p></div>";
-
-    updateConnections();
-}
 
 // =====================================
 // Update My Connections
@@ -627,10 +706,43 @@ function updateConnections() {
                 acceptButton.addEventListener("click", function() {
 
                     connection.status = "accepted";
+                    
+                    // Save the updated connection
+                    saveConnections();
+
+
+                    // Update the sender's outgoing request
+                    if (connection.senderEmail) {
+                        const senderStorageKey =
+                            "skillswapConnections_" + connection.senderEmail;
+
+                        const senderConnections = JSON.parse(
+                            localStorage.getItem(senderStorageKey) || "[]"
+                        );
+
+                        const recipientEmail =
+                            sessionStorage.getItem("skillswapActiveUser");
+
+                        const outgoingRequest = senderConnections.find(function(request) {
+                            return request.direction === "outgoing" &&
+                                    request.recipientEmail === recipientEmail &&
+                                    request.skill === connection.skill &&
+                                    request.status === "pending";
+                            });
+
+                            if (outgoingRequest) {
+                                outgoingRequest.status = "accepted";
+
+                                localStorage.setItem(
+                                    senderStorageKey,
+                                    JSON.stringify(senderConnections)
+                                );
+                            }
+                    }
 
                     updateNotificationCount();
 
-                    displayMyConnections();
+                    window.location.href = "connections.html";
 
                 });
 
@@ -650,9 +762,12 @@ function updateConnections() {
                         connections.splice(connectionIndex, 1);
                     }
 
+                    // Save the updated connections after declining
+                    saveConnections();
+
                     updateNotificationCount();
 
-                    displayMyConnections();
+                    window.location.href = "connections.html";
 
                 });
 
@@ -772,11 +887,21 @@ dashboardProfile.addEventListener("click", function(event) {
         currentProfile.learnSkill = learnSkill;
         currentProfile.bio = profileBio;
 
+        sessionStorage.setItem("skillswapProfile", JSON.stringify(currentProfile));
+
         displayProfile();
     }
 
 });
 
+// =====================================
+// Registered Accounts - Prototype
+// =====================================
+
+// Retrieve accounts previously created in this browser
+const registeredAccounts = JSON.parse(
+    localStorage.getItem("skillswapAccounts") || "[]"
+);
 
 // =====================================
 // Create Account
@@ -808,6 +933,30 @@ createAccountButton.addEventListener("click", function() {
         return;
     }
 
+    // Check whether the email is already registered
+    const emailExists = registeredAccounts.some(function (account) {
+        return account.email === email.trim().toLowerCase();
+    });
+
+    if (emailExists) {
+        signupResult.textContent = "An account with this email already exists.";
+        signupResult.className = "error";
+    return;
+    }
+
+    // Save the new account
+    const newAccount = {
+        name: fullName,
+        email: email.toLowerCase()
+    };
+
+    registeredAccounts.push(newAccount);
+
+    localStorage.setItem(
+        "skillswapAccounts",
+        JSON.stringify(registeredAccounts)
+    );
+
     signupResult.textContent = "Account created successfully!";
     signupResult.className = "success";
     goToLoginButton.hidden = false;
@@ -816,7 +965,6 @@ createAccountButton.addEventListener("click", function() {
     signupEmail.value = "";
     signupPassword.value = "";
 });
-
 
 // =====================================
 // Skill Data
@@ -866,6 +1014,52 @@ const members = [
     }
 ];
 
+// =================================
+// Load Registered Users' Skills
+// =================================
+
+function getRegisteredMembers() {
+    const accounts = JSON.parse(
+        localStorage.getItem("skillswapAccounts") || "[]"
+    );
+
+    const registeredMembers = [];
+
+    accounts.forEach(function(account) {
+        const profile = JSON.parse(
+            localStorage.getItem("skillswapProfile_" + account.email) || "{}"
+        );
+
+        const teachingSkills =
+            Array.isArray(profile.teachSkills) && profile.teachSkills.length > 0
+                ? profile.teachSkills
+                : profile.teachSkill
+                    ? [profile.teachSkill]
+                    : [];
+
+        teachingSkills.forEach(function(skill) {
+            registeredMembers.push({
+                name: profile.name || account.name,
+                email: account.email,
+                skill: skill,
+                bio: profile.bio || ""
+            });
+        });
+    });
+
+    return registeredMembers;
+}
+
+// Combine predefined skills with registered users' teaching skills
+const registeredSkills = getRegisteredMembers().map(member => member.skill);
+
+registeredSkills.forEach(function(skill) {
+    if (!skills.some(existing =>
+        existing.toLowerCase() === skill.toLowerCase()
+    )) {
+        skills.push(skill);
+    }
+});
 
 // =====================================
 // Display Browse Skills
@@ -937,8 +1131,18 @@ searchButton.addEventListener("click", function() {
 
             skillCard.addEventListener("click", function() {
 
-                const matchingMembers = members.filter(function(member) {
-                    return member.skill.toLowerCase() === item.toLowerCase();
+                // Combine demonstration members with registered users
+                const allMembers = [...members, ...getRegisteredMembers()];
+
+                // Find members who teach the selected skill
+                const matchingMembers = allMembers.filter(function(member) {
+                    const matchesSkill =
+                        member.skill.toLowerCase() === item.toLowerCase();
+
+                    const isCurrentUser =
+                        member.email === sessionStorage.getItem("skillswapActiveUser");
+
+                    return matchesSkill && !isCurrentUser;
                 });
 
                 if (matchingMembers.length > 0) {
@@ -994,12 +1198,48 @@ searchButton.addEventListener("click", function() {
 
                             connectButton.addEventListener("click", function() {
 
+                                const recipientEmail = member.email;
+
                                 connections.push({
                                     name: member.name,
+                                    recipientEmail: recipientEmail,
                                     skill: member.skill,
                                     status: "pending",
                                     direction: "outgoing"
                                 });
+
+                                // Save the new connection request
+                                saveConnections();
+
+                                // Deliver the request to the registered recipient
+                                if (recipientEmail) {
+                                    const recipientStorageKey =
+                                        "skillswapConnections_" + recipientEmail;
+
+                                    const recipientConnections = JSON.parse(
+                                        localStorage.getItem(recipientStorageKey) || "[]"
+                                    );
+
+                                    const senderEmail =
+                                        sessionStorage.getItem("skillswapActiveUser");
+
+                                    const senderProfile = JSON.parse(
+                                        localStorage.getItem("skillswapProfile_" + senderEmail) || "{}"
+                                    );
+
+                                    recipientConnections.push({
+                                        name: senderProfile.name || senderEmail,
+                                        senderEmail: senderEmail,
+                                        skill: member.skill,
+                                        status: "pending",
+                                        direction: "incoming"
+                                    });
+
+                                    localStorage.setItem(
+                                        recipientStorageKey,
+                                        JSON.stringify(recipientConnections)
+                                    );
+                                }
 
                                 connectButton.textContent = "Request Sent";
                                 connectButton.disabled = true;
@@ -1168,3 +1408,29 @@ navHomeButton.addEventListener("click", function(event) {
         block: "start"
     });
 });
+
+// =====================================
+// Restore Login State
+// =====================================
+
+if (isLoggedIn) {
+    heroSection.style.display = "none";
+    loginSection.style.display = "none";
+    signupSection.style.display = "none";
+
+    loginButton.hidden = true;
+    signupButton.hidden = true;
+    logoutButton.hidden = false;
+
+    footerLoginButton.hidden = true;
+    footerSignupButton.hidden = true;
+    footerLogoutButton.hidden = false;
+
+    userDashboard.style.display = "block";
+
+    browseSkillsSection.hidden = false;
+    browseSkillsNav.hidden = false;
+    footerBrowseSkills.hidden = false;
+    dashboardNav.hidden = false;
+    skillMatchSection.hidden = false;
+}
