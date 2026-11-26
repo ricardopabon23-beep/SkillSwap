@@ -1,108 +1,108 @@
 
-  // =============================================
-  // Check Login and Identify the Active Account
-  // =============================================
-  // My Connections is available only to logged-in users.
-  const isConnectionsLoggedIn =
-      sessionStorage.getItem("skillswapLoggedIn") === "true";
+// =============================================
+// Check Login and Identify the Active Account
+// =============================================
+// My Connections is available only to logged-in users.
+const isConnectionsLoggedIn =
+    sessionStorage.getItem("skillswapLoggedIn") === "true";
 
-  // Each account is identified by its email in session storage.
-  const activeConnectionsUser =
-      sessionStorage.getItem("skillswapActiveUser");
+// Each account is identified by its email in session storage.
+const activeConnectionsUser =
+    sessionStorage.getItem("skillswapActiveUser");
 
-  if (!isConnectionsLoggedIn || !activeConnectionsUser) {
-      window.location.replace("index.html");
-  }
+if (!isConnectionsLoggedIn || !activeConnectionsUser) {
+    window.location.replace("index.html");
+}
 
-  // =============================================
-  // Load Connections for the Active Account
-  // =============================================
-  // Different accounts have different localStorage keys.
-  const connectionsStorageKey =
-      "skillswapConnections_" + activeConnectionsUser;
+// =============================================
+// Load Connections for the Active Account
+// =============================================
+// Different accounts have different localStorage keys.
+const connectionsStorageKey =
+    "skillswapConnections_" + activeConnectionsUser;
 
-  let connections = [];
+let connections = [];
 
-  if (isConnectionsLoggedIn && activeConnectionsUser) {
-      connections = JSON.parse(
-          localStorage.getItem(connectionsStorageKey) || "[]"
-      );
-  }
+if (isConnectionsLoggedIn && activeConnectionsUser) {
+    connections = JSON.parse(
+        localStorage.getItem(connectionsStorageKey) || "[]"
+    );
+}
 
-  // This element contains the My Connections dashboard.
-  const dashboardConnections =
-      document.getElementById("dashboard-connections");
+// This element contains the My Connections dashboard.
+const dashboardConnections =
+    document.getElementById("dashboard-connections");
 
-  // =============================================
-  // Save the Current Account's Connections
-  // =============================================
-  function saveCurrentConnections() {
-      localStorage.setItem(
-          connectionsStorageKey,
-          JSON.stringify(connections)
-      );
-  }
+// =============================================
+// Save the Current Account's Connections
+// =============================================
+function saveCurrentConnections() {
+    localStorage.setItem(
+        connectionsStorageKey,
+        JSON.stringify(connections)
+    );
+}
 
-  // =============================================
-  // Find the Sender's Matching Outgoing Request
-  // =============================================
-  // Newly created incoming requests include senderEmail.
-  // Older requests without senderEmail cannot be synchronized reliably.
-  function findSenderRequest(connection) {
-      if (!connection.senderEmail) {
-          return null;
-      }
+// =============================================
+// Find the Sender's Matching Outgoing Request
+// =============================================
+// Newly created incoming requests include senderEmail.
+// Older requests without senderEmail cannot be synchronized reliably.
+function findSenderRequest(connection) {
+    if (!connection.senderEmail) {
+        return null;
+    }
 
-      const senderStorageKey =
-          "skillswapConnections_" + connection.senderEmail;
+    const senderStorageKey =
+        "skillswapConnections_" + connection.senderEmail;
 
-      const senderConnections = JSON.parse(
-          localStorage.getItem(senderStorageKey) || "[]"
-      );
+    const senderConnections = JSON.parse(
+        localStorage.getItem(senderStorageKey) || "[]"
+    );
 
-      const outgoingRequest = senderConnections.find(function(request) {
-          return request.direction === "outgoing" &&
-              request.recipientEmail === activeConnectionsUser &&
-              request.skill === connection.skill &&
-              request.status === "pending";
-      });
+    const outgoingRequest = senderConnections.find(function (request) {
+        return request.direction === "outgoing" &&
+            request.recipientEmail === activeConnectionsUser &&
+            request.skill === connection.skill &&
+            request.status === "pending";
+    });
 
-      return {
-          storageKey: senderStorageKey,
-          connections: senderConnections,
-          request: outgoingRequest
-      };
-  }
+    return {
+        storageKey: senderStorageKey,
+        connections: senderConnections,
+        request: outgoingRequest
+    };
+}
 
-  // =============================================
-  // Synchronize a Decision with the Sender
-  // =============================================
-  // Accepted requests become accepted for both accounts.
-  // Declined requests are removed from the sender's pending list.
-  function synchronizeSenderRequest(connection, accepted) {
-      const senderRecord = findSenderRequest(connection);
+// =============================================
+// Synchronize a Decision with the Sender
+// =============================================
+// Accepted requests become accepted for both accounts.
+// Declined requests are removed from the sender's pending list.
+function synchronizeSenderRequest(connection, accepted) {
+    const senderRecord = findSenderRequest(connection);
 
-      if (!senderRecord || !senderRecord.request) {
-          return;
-      }
+    if (!senderRecord || !senderRecord.request) {
+        return;
+    }
 
-      if (accepted) {
-          senderRecord.request.status = "accepted";
-      } else {
-          const requestIndex = senderRecord.connections.indexOf(
-              senderRecord.request
-          );
+    if (accepted) {
+        senderRecord.request.status = "accepted";
+    } else {
+        const requestIndex = senderRecord.connections.indexOf(
+            senderRecord.request
+        );
 
-          if (requestIndex !== -1) {
-              senderRecord.connections.splice(requestIndex, 1);
-          }
-      }
+        if (requestIndex !== -1) {
+            senderRecord.connections.splice(requestIndex, 1);
+        }
+    }
 
-      localStorage.setItem(
-          senderRecord.storageKey,
-          JSON.stringify(senderRecord.connections)
-      );
-  }
+    localStorage.setItem(
+        senderRecord.storageKey,
+        JSON.stringify(senderRecord.connections)
+    );
+}
 
 // Save a notification when a connection request is accepted.
 function notifySenderOfAcceptance(connection) {
@@ -139,11 +139,11 @@ function notifySenderOfAcceptance(connection) {
     );
 }
 
-  // =============================================
-  // Build the My Connections Page Sections
-  // =============================================
-  function displayConnections() {
-      dashboardConnections.innerHTML = `
+// =============================================
+// Build the My Connections Page Sections
+// =============================================
+function displayConnections() {
+    dashboardConnections.innerHTML = `
           <h3>My Connections</h3>
 
           <h4>Pending Requests</h4>
@@ -156,126 +156,207 @@ function notifySenderOfAcceptance(connection) {
               <p>No accepted connections yet.</p>
           </div>
       `;
-  }
+}
 
-  // =============================================
-  // Display Pending and Accepted Connections
-  // =============================================
-  function updateConnections() {
-      const pendingContainer =
-          document.getElementById("pending-connections");
+// =============================================
+// Display Pending and Accepted Connections
+// =============================================
+function updateConnections() {
+    const pendingContainer =
+        document.getElementById("pending-connections");
 
-      const acceptedContainer =
-          document.getElementById("accepted-connections");
+    const acceptedContainer =
+        document.getElementById("accepted-connections");
 
-      // Show connections that have already been accepted.
-      const acceptedConnections = connections.filter(function(connection) {
-          return connection.status === "accepted";
-      });
+    // Show connections that have already been accepted.
+    const acceptedConnections = connections.filter(function (connection) {
+        return connection.status === "accepted";
+    });
 
-      if (acceptedConnections.length > 0) {
-          acceptedContainer.innerHTML = "";
+    if (acceptedConnections.length > 0) {
+        acceptedContainer.innerHTML = "";
 
-          acceptedConnections.forEach(function(connection) {
-              const connectionItem = document.createElement("p");
+        acceptedConnections.forEach(function (connection) {
+            const connectionItem = document.createElement("div");
+            connectionItem.className = "accepted-connection-item";
 
-              connectionItem.textContent =
-                  connection.name + " — " +
-                  connection.skill + " (Connected)";
+            // Retrieve the registered user's display name.
+            const connectionEmail =
+                connection.direction === "incoming"
+                    ? connection.senderEmail
+                    : connection.recipientEmail;
 
-              acceptedContainer.appendChild(connectionItem);
-          });
-      }
+            const registeredAccounts = JSON.parse(
+                localStorage.getItem("skillswapAccounts") || "[]"
+            );
 
-      // Show requests that are still awaiting a decision.
-      const pendingConnections = connections.filter(function(connection) {
-          return connection.status === "pending";
-      });
+            const connectedAccount = registeredAccounts.find(function (account) {
+                return account.email === connectionEmail;
+            });
 
-      if (pendingConnections.length === 0) {
-          return;
-      }
+            const displayName = connectedAccount
+                ? connectedAccount.name
+                : connection.name;
 
-      pendingContainer.innerHTML = "";
+            // Display the connection using the user's name.
+            const connectionInfo = document.createElement("p");
+            connectionInfo.textContent =
+                displayName + " — " +
+                connection.skill + " (Connected)";
 
-      pendingConnections.forEach(function(connection) {
-          const connectionItem = document.createElement("p");
-          const connectionActions = document.createElement("span");
+            connectionItem.appendChild(connectionInfo);
 
-          // Incoming requests can be accepted or declined.
-          // Outgoing requests are displayed as Request Sent.
-          const directionLabel =
-              connection.direction === "incoming"
-                  ? "Request Received"
-                  : "Request Sent";
+            // Create the Message button
+            const messageButton = document.createElement("button");
+            messageButton.type = "button";
+            messageButton.className = "message-connection-button";
+            messageButton.textContent = "Message";
 
-          connectionItem.textContent =
-              connection.name + " — " +
-              connection.skill + " (" + directionLabel + ")";
+            messageButton.addEventListener("click", function () {
+                const connectionEmail =
+                    connection.direction === "incoming"
+                        ? connection.senderEmail
+                        : connection.recipientEmail;
 
-          if (connection.direction === "incoming") {
-              // ---------------------------------------------
-              // Accept an Incoming Connection Request
-              // ---------------------------------------------
-              const acceptButton = document.createElement("button");
-              acceptButton.textContent = "Accept";
-              acceptButton.className = "connection-accept-btn";
+                if (!connectionEmail) {
+                    alert("This connection does not have an account email. Messaging is unavailable for this connection.");
+                    return;
+                }
 
-              acceptButton.addEventListener("click", function() {
-                  // Accept and save the request in this account.
-                  connection.status = "accepted";
-                  saveCurrentConnections();
+                const selectedConnection = encodeURIComponent(connectionEmail);
+                const registeredAccounts = JSON.parse(
+                    localStorage.getItem("skillswapAccounts") || "[]"
+                );
 
-                  // Update the sender's matching outgoing request.
-                  synchronizeSenderRequest(connection, true);
+                const recipientAccount = registeredAccounts.find(function (account) {
+                    return account.email === connectionEmail;
+                });
 
-                  // Notify the sender that their connection request was accepted.
-                  notifySenderOfAcceptance(connection);
+                const displayName = recipientAccount
+                    ? recipientAccount.name
+                    : connection.name;
 
-                  // Refresh the page sections with the new status.
-                  displayConnections();
-                  updateConnections();
-              });
+                const selectedName = encodeURIComponent(displayName);
 
-              connectionActions.appendChild(acceptButton);
+                window.location.href =
+                    "messages.html?user=" + selectedConnection +
+                    "&name=" + selectedName;
+            });
 
-              // ---------------------------------------------
-              //  Decline an Incoming Connection Request
-              // ---------------------------------------------
-              const declineButton = document.createElement("button");
-              declineButton.textContent = "Decline";
-              declineButton.className = "connection-decline-btn";
+            connectionItem.appendChild(messageButton);
+            acceptedContainer.appendChild(connectionItem);
+        });
+    }
 
-              declineButton.addEventListener("click", function() {
-                  // Remove the incoming request from this account.
-                  const connectionIndex = connections.indexOf(connection);
+    // Show requests that are still awaiting a decision.
+    const pendingConnections = connections.filter(function (connection) {
+        return connection.status === "pending";
+    });
 
-                  if (connectionIndex !== -1) {
-                      connections.splice(connectionIndex, 1);
-                  }
+    if (pendingConnections.length === 0) {
+        return;
+    }
 
-                  saveCurrentConnections();
+    pendingContainer.innerHTML = "";
 
-                  // Remove the corresponding pending outgoing request.
-                  synchronizeSenderRequest(connection, false);
+    pendingConnections.forEach(function (connection) {
+        const connectionItem = document.createElement("p");
+        const connectionActions = document.createElement("span");
 
-                  // Refresh the page sections after declining.
-                  displayConnections();
-                  updateConnections();
-              });
+        // Incoming requests can be accepted or declined.
+        // Outgoing requests are displayed as Request Sent.
+        const directionLabel =
+            connection.direction === "incoming"
+                ? "Request Received"
+                : "Request Sent";
 
-              connectionActions.appendChild(declineButton);
-              connectionItem.appendChild(connectionActions);
-          }
+        // Identify the other account using its email address.
+        const connectionEmail =
+            connection.direction === "incoming"
+                ? connection.senderEmail
+                : connection.recipientEmail;
 
-          pendingContainer.appendChild(connectionItem);
-      });
-  }
+        // Retrieve the registered account's display name.
+        const registeredAccounts = JSON.parse(
+            localStorage.getItem("skillswapAccounts") || "[]"
+        );
 
-  // =============================================
-  //  Initialize My Connections After Login
-  // =============================================
-  if (isConnectionsLoggedIn && activeConnectionsUser) {
-      displayConnections();
-      updateConnections();
-  }
+        const connectedAccount = registeredAccounts.find(function (account) {
+            return account.email === connectionEmail;
+        });
+
+        const displayName = connectedAccount
+            ? connectedAccount.name
+            : connection.name;
+
+        // Display the pending request using the user's name.
+        connectionItem.textContent =
+            displayName + " — " +
+            connection.skill + " (" + directionLabel + ")";
+
+        if (connection.direction === "incoming") {
+            // ---------------------------------------------
+            // Accept an Incoming Connection Request
+            // ---------------------------------------------
+            const acceptButton = document.createElement("button");
+            acceptButton.textContent = "Accept";
+            acceptButton.className = "connection-accept-btn";
+
+            acceptButton.addEventListener("click", function () {
+                // Accept and save the request in this account.
+                connection.status = "accepted";
+                saveCurrentConnections();
+
+                // Update the sender's matching outgoing request.
+                synchronizeSenderRequest(connection, true);
+
+                // Notify the sender that their connection request was accepted.
+                notifySenderOfAcceptance(connection);
+
+                // Refresh the page sections with the new status.
+                displayConnections();
+                updateConnections();
+            });
+
+            connectionActions.appendChild(acceptButton);
+
+            // ---------------------------------------------
+            //  Decline an Incoming Connection Request
+            // ---------------------------------------------
+            const declineButton = document.createElement("button");
+            declineButton.textContent = "Decline";
+            declineButton.className = "connection-decline-btn";
+
+            declineButton.addEventListener("click", function () {
+                // Remove the incoming request from this account.
+                const connectionIndex = connections.indexOf(connection);
+
+                if (connectionIndex !== -1) {
+                    connections.splice(connectionIndex, 1);
+                }
+
+                saveCurrentConnections();
+
+                // Remove the corresponding pending outgoing request.
+                synchronizeSenderRequest(connection, false);
+
+                // Refresh the page sections after declining.
+                displayConnections();
+                updateConnections();
+            });
+
+            connectionActions.appendChild(declineButton);
+            connectionItem.appendChild(connectionActions);
+        }
+
+        pendingContainer.appendChild(connectionItem);
+    });
+}
+
+// =============================================
+//  Initialize My Connections After Login
+// =============================================
+if (isConnectionsLoggedIn && activeConnectionsUser) {
+    displayConnections();
+    updateConnections();
+}

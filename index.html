@@ -8,6 +8,10 @@
     <title>SkillSwap | Learn. Share. Connect.</title>
 
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- SkillSwap browser tab icon -->
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+
 </head>
 
 <body>
@@ -43,7 +47,21 @@
                 <li>
                     <a href="#about">About</a>
                 </li>
+
+                <li>
+                    <a href="contact.html">Contact</a>
+                </li>
             </ul>
+
+            <button
+                type="button"
+                id="notification-bell"
+                aria-label="View notifications"
+                hidden
+            >
+                🔔
+                <span id="notification-count" class="notification-count" hidden>0</span>
+            </button>
 
             <div class="nav-buttons">
                 <a href="#" class="login-button" id="login-button">Log In</a>
@@ -119,18 +137,21 @@
         type="text"
         id="signup-name"
         placeholder="Full name"
+        aria-label="Full name"
     >
 
     <input
         type="email"
         id="signup-email"
         placeholder="Email address"
-        >
+        aria-label="Email address"
+    >
 
     <input
         type="password"
         id="signup-password"
         placeholder="Password"
+        aria-label="Password"
     >
 
     <button id="create-account-button">
@@ -163,12 +184,14 @@
             <input
                 type="email"
                 id="login-email"
+                aria-label="Email address"
                 placeholder="Email address"
             >
 
             <input
                 type="password"
                 id="login-password"
+                aria-label="Password"
                 placeholder="Password"
             >
 
@@ -228,19 +251,6 @@
 
             </div>
 
-            <div class="dashboard-card" id="notifications-card">
-
-                <h3>
-                    Notifications
-                    <span id="notification-count" class="notification-count" hidden>0</span>
-                </h3>
-
-                <p>
-                    View connection requests and other SkillSwap notifications.
-                </p>
-
-            </div>
-
         </div> <!-- closes dashboard-cards --> 
 
         <!-- Dashboard Quick Actions -->
@@ -276,7 +286,8 @@
             <input
                 type="text"
                 id="skill-input"
-                placeholder="What skill do you want to learn?"
+                placeholder="Enter a skill"
+                aria-label="Search for a skill"
             >
 
             <button id="search-button">
@@ -304,18 +315,21 @@
                 type="text"
                 id="name-input"
                 placeholder="Your name"
+                aria-label="Your name"
             >
 
             <input
                 type="text"
                 id="skill-share-input"
-                placeholder="What skill can you teach?"
+                placeholder="Skill you can teach"
+                aria-label="Skill you can teach"
             >
 
-            <textarea
+           <textarea
                 id="bio-input"
+                placeholder="Tell us about yourself"
                 maxlength="200"
-                placeholder="Tell us a little bit about your skill..."
+                aria-label="Your biography"
             ></textarea>
 
             <p id="bio-counter">0 /200 characters</p>
@@ -353,7 +367,40 @@
                 Explore skills shared by members of the SkillSwap community.
             </p>
 
+            <!-- Browse Skills Search -->
+            <div class="browse-skills-search">
+                <label for="browse-skills-search">
+                    Search available skills
+                </label>
+
+                <input
+                    type="search"
+                    id="browse-skills-search"
+                    placeholder="Search available skills..."
+                    autocomplete="off"
+                >
+            </div>
+
+            <p id="skills-result-count" aria-live="polite"></p>
+
             <div id="skills-container" class="skills-container">
+
+            </div>
+
+            <!-- Browse Skills Pagination -->
+            <div class="skills-pagination" id="skills-pagination">
+
+                <button type="button" id="skills-prev-btn" disabled>
+                    Previous
+                </button>
+
+                <span id="skills-page-info" aria-live="polite">
+                    Page 1 of 1
+                </span>
+
+                <button type="button" id="skills-next-btn" disabled>
+                    Next
+                </button>
 
             </div>
 
@@ -528,6 +575,7 @@
                 <a href="#about">About</a>
                 <a href="#how-it-works">How It Works</a>
                 <a href="#browse-skills" id="footer-browse-skills" hidden>Browse Skills</a>
+                <a href="contact.html">Contact</a>
             </div>
 
 
@@ -560,6 +608,12 @@
                    target="_blank"
                    rel="noopener noreferrer">
                     Ludovic Delot / Pexels
+                </a>
+                 | 
+                <a href="https://www.pexels.com/license/"
+                target="_blank"
+                rel="noopener noreferrer">
+                    Pexels License
                 </a>
             </p>
 

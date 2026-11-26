@@ -62,22 +62,29 @@ const profileMessage =
         ? "<p class='profile-notice'>Your profile is not complete yet. Click Edit Profile to add your information.</p>"
         : "";
 
+// Escape user-provided content before displaying it as HTML
+function escapeHTML(value) {
+    const element = document.createElement("div");
+    element.textContent = String(value ?? "");
+    return element.innerHTML;
+}
+
 // Display the profile information
 dashboardProfile.innerHTML = `
 ${profileMessage}
 
-    <p><strong>Name:</strong> ${currentProfile.name}</p>    
-    
+    <p><strong>Name:</strong> ${escapeHTML(currentProfile.name)}</p>
+
     <div>
         <strong>Skills I Can Teach:</strong>
         <ul>
             ${currentProfile.teachSkills
-                .map(skill => `<li>${skill}</li>`)
+                .map(skill => `<li>${escapeHTML(skill)}</li>`)
                 .join("")}
         </ul>
     </div>
-    <p><strong>Skill I Want to Learn:</strong> ${currentProfile.learnSkill}</p>
-    <p><strong>About Me:</strong> ${currentProfile.bio}</p>
+    <p><strong>Skill I Want to Learn:</strong> ${escapeHTML(currentProfile.learnSkill)}</p>
+    <p><strong>About Me:</strong> ${escapeHTML(currentProfile.bio)}</p>
 `;
 
 // ===============================
@@ -116,31 +123,49 @@ editProfileButton.addEventListener("click", function () {
     document.getElementById("edit-bio").value = currentProfile.bio;
     document.getElementById("save-profile-button").addEventListener("click", function () {
 
-    const name = document.getElementById("edit-name").value.trim();
-    const learnSkill = document.getElementById("edit-learn-skill").value.trim();
-    const bio = document.getElementById("edit-bio").value.trim();
+        const name = document.getElementById("edit-name").value.trim();
+        const learnSkill = document.getElementById("edit-learn-skill").value.trim();
+        const bio = document.getElementById("edit-bio").value.trim();
 
-    if (!name || !learnSkill || !bio) {
-        alert("Please complete all profile fields.");
-        return;
-    }
+        if (!name || !learnSkill || !bio) {
+            alert("Please complete all profile fields.");
+            return;
+        }
 
-    currentProfile.name = name;
-    currentProfile.learnSkill = learnSkill;
-    currentProfile.bio = bio;
+        currentProfile.name = name;
+        currentProfile.learnSkill = learnSkill;
+        currentProfile.bio = bio;
 
-    if (!activeUser) {
-        alert("Please log in before saving your profile.");
-        return;
-    }
+        if (!activeUser) {
+            alert("Please log in before saving your profile.");
+            return;
+        }
 
-    // Save the profile under the active user's account
-    localStorage.setItem(
-        "skillswapProfile_" + activeUser,
-        JSON.stringify(currentProfile)
-    );
+        // Save the profile under the active user's account
+        localStorage.setItem(
+            "skillswapProfile_" + activeUser,
+            JSON.stringify(currentProfile)
+        );
 
-        window.location.reload();
-    });
+        // Synchronize the registered account's display name
+        const registeredAccounts = JSON.parse(
+            localStorage.getItem("skillswapAccounts") || "[]"
+        );
+
+        const accountIndex = registeredAccounts.findIndex(function(account) {
+            return account.email === activeUser;
+        });
+
+        if (accountIndex !== -1) {
+            registeredAccounts[accountIndex].name = currentProfile.name;
+
+            localStorage.setItem(
+                "skillswapAccounts",
+                JSON.stringify(registeredAccounts)
+            );
+        }
+
+            window.location.reload();
+        });
 
 });

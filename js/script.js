@@ -1,8 +1,33 @@
+// Escape user-provided content before displaying it as HTML
+function escapeHTML(value) {
+    const element = document.createElement("div");
+    element.textContent = String(value ?? "");
+    return element.innerHTML;
+}
+
+// Generate a password hash for prototype authentication.
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+
+    const hashBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        data
+    );
+
+    const hashArray = Array.from(
+        new Uint8Array(hashBuffer)
+    );
+
+    return hashArray.map(function(byte) {
+        return byte.toString(16).padStart(2, "0");
+    }).join("");
+}
+
 const profileCard = document.getElementById("profile-card");
 const dashboardProfile = document.getElementById("dashboard-profile");
 const mySkillsCard = document.getElementById("my-skills-card");
 const myConnectionsCard = document.getElementById("my-connections-card");
-const notificationsCard = document.getElementById("notifications-card");
 
 const findSkillButton = document.getElementById("find-skill-button");
 const dashboardFindSkillButton = document.getElementById("dashboard-find-skill");
@@ -26,6 +51,16 @@ const matchResult = document.getElementById("match-result");
 const profileResult = document.getElementById("profile-result");
 const skillsContainer = document.getElementById("skills-container");
 const browseSkillsSection = document.getElementById("browse-skills");
+const browseSkillsSearch = document.getElementById("browse-skills-search");
+const skillsResultCount = document.getElementById("skills-result-count");
+const skillsPrevButton = document.getElementById("skills-prev-btn");
+const skillsNextButton = document.getElementById("skills-next-btn");
+const skillsPageInfo = document.getElementById("skills-page-info");
+
+// Pagination settings
+const skillsPerPage = 6;
+let currentSkillsPage = 1;
+
 const skillMatchSection = document.getElementById("skill-match");
 const exploreMatchesButton = document.getElementById("explore-matches-button");
 
@@ -34,6 +69,8 @@ const footerBrowseSkills = document.getElementById("footer-browse-skills");
 const dashboardNav = document.getElementById("dashboard-nav");
 const navbarUserName = document.getElementById("navbar-user-name");
 
+// Display the active user's profile name in the navigation bar.
+// Fall back to the registered account name or the SkillSwap brand.
 function updateNavbarUserName() {
     const activeUser = sessionStorage.getItem("skillswapActiveUser");
 
@@ -46,13 +83,13 @@ function updateNavbarUserName() {
     });
 
     const savedProfile = activeUser
-    ? JSON.parse(localStorage.getItem("skillswapProfile_" + activeUser) || "{}")
-    : {};
+        ? JSON.parse(localStorage.getItem("skillswapProfile_" + activeUser) || "{}")
+        : {};
 
-navbarUserName.textContent =
-    activeUser && account
-        ? (savedProfile.name || account.name)
-        : "SkillSwap";
+    navbarUserName.textContent =
+        activeUser && account
+            ? (savedProfile.name || account.name)
+            : "SkillSwap";
 }
 
 updateNavbarUserName();
@@ -69,6 +106,7 @@ const goToLoginButton = document.getElementById("go-to-login-button");
 
 const loginButton = document.getElementById("login-button");
 const logoutButton = document.getElementById("logout-button");
+const notificationBell = document.getElementById("notification-bell");
 const footerLogoutButton = document.getElementById("footer-logout-button");
 const footerLoginButton = document.getElementById("footer-login-button");
 const loginSection = document.getElementById("login-section");
@@ -90,10 +128,10 @@ let isLoggedIn = sessionStorage.getItem("skillswapLoggedIn") === "true";
 findSkillButton.addEventListener("click", function(event) {
     event.preventDefault();
 
-    if (!isLoggedIn) {
-    alert("Please log in to find a skill.");
-    return;
-}
+      if (!isLoggedIn) {
+        alert("Please log in to find a skill.");
+        return;
+    }
 
     skillSearch.style.display = "block";
     shareSkillForm.style.display = "none";
@@ -128,10 +166,10 @@ exploreMatchesButton.addEventListener("click", function(event) {
 shareSkillButton.addEventListener("click", function(event) {
     event.preventDefault();
 
-    if (!isLoggedIn) {
-    alert("Please log in to share your skill.");
-    return;
-}
+       if (!isLoggedIn) {
+        alert("Please log in to share your skill.");
+        return;
+    }
 
     shareSkillForm.style.display = "block";
     skillSearch.style.display = "none";
@@ -195,7 +233,7 @@ footerLoginButton.addEventListener("click", function(event) {
 // Login Form
 // =====================================
 
-loginSubmitButton.addEventListener("click", function() {
+loginSubmitButton.addEventListener("click", async function() {
 
     const email = loginEmail.value.trim();
     const password = loginPassword.value;
@@ -225,6 +263,23 @@ loginSubmitButton.addEventListener("click", function() {
         return;
     }
 
+    // Check whether the account has a registered password
+    if (!matchingAccount.passwordHash) {
+        loginResult.textContent =
+            "This account requires a password setup.";
+        loginResult.className = "error";
+        return;
+    }
+
+    // Verify the entered password against the stored hash
+    const enteredPasswordHash = await hashPassword(password);
+
+    if (enteredPasswordHash !== matchingAccount.passwordHash) {
+        loginResult.textContent = "Incorrect password.";
+        loginResult.className = "error";
+        return;
+    }
+
     loginResult.textContent = "Login information accepted.";
     loginResult.className = "success";
 
@@ -241,17 +296,22 @@ loginSubmitButton.addEventListener("click", function() {
 
     updateNavbarUserName();
 
+    // Hide the login form and public hero section.
     loginSection.style.display = "none";
     heroSection.style.display = "none";
     
+    // Update navigation controls for the authenticated user.
     loginButton.hidden = true;
     signupButton.hidden = true;
     logoutButton.hidden = false;
+    notificationBell.hidden = false;
 
+    // Update footer account links to reflect the logged-in state.
     footerLoginButton.hidden = true;
     footerSignupButton.hidden = true;
     footerLogoutButton.hidden = false;
     
+    //Display the dashboard and account-only features.
     userDashboard.style.display = "block";
 
     browseSkillsSection.hidden = false;
@@ -274,17 +334,19 @@ logoutButton.addEventListener("click", function(event) {
     isLoggedIn = false;
     sessionStorage.removeItem("skillswapLoggedIn");
 
-    // Clear the active demonstration account
+    // Clear the active user's session without deleting saved account data.
     sessionStorage.removeItem("skillswapActiveUser");
 
     window.location.reload();
 });
 
+// Reuse the main logout handler for the footer logout link.
 footerLogoutButton.addEventListener("click", function(event) {
     event.preventDefault();
     logoutButton.click();
 });
 
+// Allow users to submit the login form by pressing Enter.
 loginPassword.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         loginSubmitButton.click();
@@ -361,11 +423,15 @@ function saveConnections() {
 // =====================================
 // Notification Request Section
 // =====================================
+
+// Store notifications loaded for the active account.
 let acceptedRequestNotifications = [];
 
+// Retrieve saved notifications from the active account's local storage.
 function loadNotifications() {
     const activeUser = sessionStorage.getItem("skillswapActiveUser");
 
+    // Clear notification data when no account is active.
     if (!activeUser) {
         acceptedRequestNotifications = [];
         return;
@@ -378,6 +444,7 @@ function loadNotifications() {
     );
 }
 
+// Restore saved notifications when the page loads
 loadNotifications();
 
 // =====================================
@@ -660,10 +727,10 @@ function updateNotifications() {
 }
 
 // =====================================
-// Dashboard Notifications Card
+//  Navigation Notifications Bell
 // =====================================
 
-notificationsCard.addEventListener("click", function() {
+notificationBell.addEventListener("click", function() {
     window.location.href = "notifications.html";
 });
 
@@ -907,7 +974,7 @@ const registeredAccounts = JSON.parse(
 // Create Account
 // =====================================
 
-createAccountButton.addEventListener("click", function() {
+createAccountButton.addEventListener("click", async function() {
 
     const fullName = signupName.value.trim();
     const email = signupEmail.value.trim();
@@ -944,10 +1011,14 @@ createAccountButton.addEventListener("click", function() {
     return;
     }
 
+    // Generate the password hash
+    const passwordHash = await hashPassword(password);
+
     // Save the new account
     const newAccount = {
         name: fullName,
-        email: email.toLowerCase()
+        email: email.toLowerCase(),
+        passwordHash: passwordHash
     };
 
     registeredAccounts.push(newAccount);
@@ -1042,12 +1113,51 @@ function getRegisteredMembers() {
                 name: profile.name || account.name,
                 email: account.email,
                 skill: skill,
+                learnSkill: profile.learnSkill || "",
                 bio: profile.bio || ""
             });
         });
     });
 
     return registeredMembers;
+}
+
+// =====================================
+// Reciprocal Skill Matching
+// =====================================
+
+// Determine whether two members can teach the skills each other wants to learn.
+function isReciprocalMatch(member) {
+    const activeUser = sessionStorage.getItem("skillswapActiveUser");
+
+    // Exclude inactive sessions, demonstration members, and self-matches.
+    if (!activeUser || !member.email || member.email === activeUser) {
+        return false;
+    }
+
+    const profile = JSON.parse(
+        localStorage.getItem("skillswapProfile_" + activeUser) || "{}"
+    );
+
+    // Normalize skill names for case-insensitive comparisons.
+    const normalizeSkill = skill =>
+        (skill || "").trim().toLowerCase();
+
+    const teachingSkills =
+        Array.isArray(profile.teachSkills) && profile.teachSkills.length > 0
+            ? profile.teachSkills
+            : profile.teachSkill
+                ? [profile.teachSkill]
+                : [];
+    // Confirm that both members offer a skill the other wants to learn.
+    return Boolean(
+        normalizeSkill(profile.learnSkill) &&
+        normalizeSkill(member.learnSkill) &&
+        normalizeSkill(profile.learnSkill) === normalizeSkill(member.skill) &&
+        teachingSkills.some(skill =>
+            normalizeSkill(skill) === normalizeSkill(member.learnSkill)
+        )
+    );
 }
 
 // Combine predefined skills with registered users' teaching skills
@@ -1069,13 +1179,64 @@ function displaySkills() {
 
     skillsContainer.innerHTML = "";
 
-    skills.forEach(function(skill) {
+   // Filter and alphabetically sort available skills
+    const searchTerm = browseSkillsSearch.value.trim().toLowerCase();
 
-        const skillCard = document.createElement("div");
+    const filteredSkills = [...skills]
+        .filter(skill => skill.toLowerCase().includes(searchTerm))
+        .sort((a, b) => a.localeCompare(b));
+
+    // Calculate pagination
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredSkills.length / skillsPerPage)
+    );
+
+    currentSkillsPage = Math.max(
+        1,
+        Math.min(currentSkillsPage, totalPages)
+    );
+
+    const startIndex = (currentSkillsPage - 1) * skillsPerPage;
+
+    const visibleSkills = filteredSkills.slice(
+        startIndex,
+        startIndex + skillsPerPage
+    );
+
+    // Update result count and pagination controls
+        skillsResultCount.textContent =
+        filteredSkills.length +
+        (filteredSkills.length === 1 ? " skill found" : " skills found");
+
+    skillsPageInfo.textContent =
+        "Page " + currentSkillsPage + " of " + totalPages;
+
+    skillsPrevButton.disabled = currentSkillsPage <= 1;
+    skillsNextButton.disabled = currentSkillsPage >= totalPages;
+
+    // Display a helpful message when no skills match
+    if (filteredSkills.length === 0) {
+        const emptyMessage = document.createElement("p");
+
+        emptyMessage.classList.add("no-skills-message");
+        emptyMessage.textContent =
+            "No matching skills found. Try a different keyword.";
+
+        skillsContainer.appendChild(emptyMessage);
+        return;
+    }
+
+    // Create interactive skill cards for the current page of results.
+    visibleSkills.forEach(function(skill) {
+
+        const skillCard = document.createElement("button");
+        skillCard.type = "button";
 
         skillCard.classList.add("browse-skill-card");
         skillCard.textContent = skill;
 
+        // Open the skill search and automatically search for the selected skill.
         skillCard.addEventListener("click", function() {
 
             skillSearch.style.display = "block";
@@ -1095,6 +1256,24 @@ function displaySkills() {
 }
 
 displaySkills();
+
+// Filter skills as the user types
+browseSkillsSearch.addEventListener("input", function() {
+    currentSkillsPage = 1;
+    displaySkills();
+});
+
+// Navigate to the previous page
+skillsPrevButton.addEventListener("click", function() {
+    currentSkillsPage--;
+    displaySkills();
+});
+
+// Navigate to the next page
+skillsNextButton.addEventListener("click", function() {
+    currentSkillsPage++;
+    displaySkills();
+});
 
 
 // =====================================
@@ -1149,7 +1328,7 @@ searchButton.addEventListener("click", function() {
 
                     matchResult.innerHTML =
                         "<h3>People who can help you learn " +
-                        item +
+                        escapeHTML(item) +
                         "</h3>";
 
                     matchingMembers.forEach(function(member) {
@@ -1161,18 +1340,28 @@ searchButton.addEventListener("click", function() {
                         memberCard.textContent =
                             member.name + " - " + member.skill;
 
+                            // Display an indicator for reciprocal skill matches
+                            if (isReciprocalMatch(member)) {
+                                const matchBadge = document.createElement("span");
+
+                                matchBadge.classList.add("mutual-match-badge");
+                                matchBadge.textContent = "Mutual Skill Match";
+
+                                memberCard.appendChild(matchBadge);
+                            }
+
                         memberCard.addEventListener("click", function() {
 
                             profileResult.innerHTML =
-                                "<div class='profile-picture'>👤</div>" +
-                                "<h3>" + member.name + "</h3>" +
-                                "<p class='profile-skill'>Skill: " +
-                                member.skill + "</p>" +
-                                "<p class='profile-bio'>" +
-                                member.bio + "</p>" +
-                                "<p class='profile-help'><strong>Can help you learn:</strong> " +
-                                member.skill + "</p>" +
-                                "<button class='connect-button'>Connect</button>";
+                            "<div class='profile-picture'>👤</div>" +
+                            "<h3>" + escapeHTML(member.name) + "</h3>" +
+                            "<p class='profile-skill'>Skill: " +
+                            escapeHTML(member.skill) + "</p>" +
+                            "<p class='profile-bio'>" +
+                            escapeHTML(member.bio) + "</p>" +
+                            "<p class='profile-help'><strong>Can help you learn:</strong> " +
+                            escapeHTML(member.skill) + "</p>" +
+                            "<button class='connect-button'>Connect</button>";
 
                             const connectButton =
                                 profileResult.querySelector(".connect-button");
@@ -1301,7 +1490,6 @@ skillInput.addEventListener("keydown", function(event) {
 
 });
 
-
 // =====================================
 // Share a Skill
 // =====================================
@@ -1312,30 +1500,85 @@ submitSkillButton.addEventListener("click", function() {
     const skill = skillShareInput.value.trim();
     const bio = bioInput.value.trim();
 
+    // Identify the active account before saving a shared skill.
+    const activeUser = sessionStorage.getItem("skillswapActiveUser");
+
+    if (!isLoggedIn || !activeUser) {
+        shareResult.textContent = "Please log in to share a skill.";
+        shareResult.className = "error";
+        return;
+    }
+
+    // Retrieve the active user's existing profile.
+    const profileStorageKey = "skillswapProfile_" + activeUser;
+
+    const savedProfile = JSON.parse(
+        localStorage.getItem(profileStorageKey) || "{}"
+    );
+
+    // Validate all required fields before sharing a skill.
     if (name === "" || skill === "" || bio === "") {
         shareResult.textContent = "Please complete all fields.";
         shareResult.className = "error";
         return;
     }
 
-    const duplicateMember = members.some(function(member) {
-        return member.name.toLowerCase() === name.toLowerCase() &&
-            member.skill.toLowerCase() === skill.toLowerCase();
+    // Retrieve existing teaching skills while supporting older profiles.
+    const teachingSkills = Array.isArray(savedProfile.teachSkills)
+        ? [...savedProfile.teachSkills]
+        : savedProfile.teachSkill
+            ? [savedProfile.teachSkill]
+            : [];
+
+    // Prevent the active user from sharing the same skill twice.
+    const duplicateMember = teachingSkills.some(function(existingSkill) {
+        return existingSkill.toLowerCase() === skill.toLowerCase();
     });
 
+    // Display an error if the skill already exists.
     if (duplicateMember) {
         shareResult.textContent =
             "This student has already shared this skill.";
         shareResult.className = "error";
         return;
-}
-    const newMember = {
+    }
+    // Add the new skill to the active user's teaching skills.
+    teachingSkills.push(skill);
+
+    // Update the saved profile while preserving existing information.
+    const updatedProfile = {
+        ...savedProfile,
         name: name,
-        skill: skill,
+        teachSkills: teachingSkills,
         bio: bio
     };
 
-    members.push(newMember);
+    // Save the updated profile permanently in browser storage.
+    localStorage.setItem(
+        profileStorageKey,
+        JSON.stringify(updatedProfile)
+    );
+
+    // Synchronize the registered account name with the updated profile.
+    const accounts = JSON.parse(
+        localStorage.getItem("skillswapAccounts") || "[]"
+    );
+
+    const account = accounts.find(function(account) {
+        return account.email === activeUser;
+    });
+
+    if (account) {
+        account.name = updatedProfile.name;
+
+        localStorage.setItem(
+            "skillswapAccounts",
+            JSON.stringify(accounts)
+        );
+    }
+
+    // Refresh the name displayed in the navigation bar.
+    updateNavbarUserName();
 
     // Add the skill if it does not already exist.
 
@@ -1364,7 +1607,7 @@ clearShareSkillButton.addEventListener("click", function() {
     skillShareInput.value = "";
     bioInput.value = "";
 
-    bioCounter.textContent = "0 /200 characters";
+    bioCounter.textContent = "0 / 200 characters";
 
     shareResult.textContent = "";
     shareResult.className = "";
@@ -1413,6 +1656,8 @@ navHomeButton.addEventListener("click", function(event) {
 // Restore Login State
 // =====================================
 
+// Restore the authenticated interface after a page refresh
+// or when returning from another SkillSwap page.
 if (isLoggedIn) {
     heroSection.style.display = "none";
     loginSection.style.display = "none";
@@ -1421,10 +1666,12 @@ if (isLoggedIn) {
     loginButton.hidden = true;
     signupButton.hidden = true;
     logoutButton.hidden = false;
+    notificationBell.hidden = false;
 
     footerLoginButton.hidden = true;
     footerSignupButton.hidden = true;
     footerLogoutButton.hidden = false;
+    
 
     userDashboard.style.display = "block";
 
@@ -1433,4 +1680,24 @@ if (isLoggedIn) {
     footerBrowseSkills.hidden = false;
     dashboardNav.hidden = false;
     skillMatchSection.hidden = false;
+}
+
+// =====================================
+// Authentication Navigation from Other Pages
+// =====================================
+
+// Open the appropriate authentication form when a logged-out
+// visitor follows a login or registration link from another page.
+if (!isLoggedIn) {
+
+    if (window.location.hash === "#login-section") {
+
+        loginButton.click();
+
+    } else if (window.location.hash === "#signup-section") {
+
+        signupButton.click();
+
+    }
+
 }

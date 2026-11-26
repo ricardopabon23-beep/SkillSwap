@@ -73,8 +73,22 @@ function displayNotifications() {
     incomingRequests.forEach(function(connection) {
         const paragraph = document.createElement("p");
 
+        // Retrieve the sender's registered display name
+        const registeredAccounts = JSON.parse(
+            localStorage.getItem("skillswapAccounts") || "[]"
+        );
+
+        const senderAccount = registeredAccounts.find(function(account) {
+            return account.email === connection.senderEmail;
+        });
+
+        const senderName = senderAccount
+            ? senderAccount.name
+            : connection.name;
+
+        // Display the connection request using the sender's name
         paragraph.textContent =
-            connection.name + " sent you a connection request.";
+            senderName + " sent you a connection request.";
 
         // Create a button to view the request
         const viewRequest = document.createElement("button");
@@ -92,23 +106,41 @@ function displayNotifications() {
         notificationsList.appendChild(paragraph);
     });
 
-    // Display Accepted Connection Notifications
+    // Display unread connection acceptance and message notifications.
     unreadAcceptedNotifications.forEach(function(notification) {
         const paragraph = document.createElement("p");
 
-        paragraph.textContent =
-            notification.name + " accepted your connection request!";
+        // Display the appropriate notification message
+        if (notification.type === "message") {
+            paragraph.textContent =
+                notification.name + " sent you a message!";
+        } else {
+            paragraph.textContent =
+                notification.name + " accepted your connection request!";
+        }
 
-        // Create a button to view the accepted connection
+        // Create a button to open the related connection or conversation.
         const viewConnection = document.createElement("button");
 
         viewConnection.type = "button";
-        viewConnection.textContent = "View connection →";
+        viewConnection.textContent =
+            notification.type === "message"
+                ? "View message →"
+                : "View connection →";
+
         viewConnection.className = "notification-action";
 
-        // Open My Connections when the button is clicked
+        // Open the appropriate page based on the notification type
         viewConnection.addEventListener("click", function() {
-            window.location.href = "connections.html";
+            if (notification.type === "message") {
+                window.location.href =
+                    "messages.html?user=" +
+                    encodeURIComponent(notification.senderEmail) +
+                    "&name=" +
+                    encodeURIComponent(notification.name);
+            } else {
+                window.location.href = "connections.html";
+            }
         });
 
         paragraph.appendChild(viewConnection);

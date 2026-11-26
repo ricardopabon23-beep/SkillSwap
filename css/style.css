@@ -11,10 +11,10 @@ General Page Styles
     box-sizing: border-box;
 }
 
-body{
+body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
-    background-color: #f4f4f4;
+    background-color: #fff8d6;
     color: #222;
 }
 
@@ -36,7 +36,7 @@ Navigation Bar
     border-bottom: 1px solid #16304f;
 }
 
- a {
+ #navbar-user-name {
     font-size: 28px;
     font-weight: bold;
     color: white;
@@ -95,6 +95,31 @@ Navigation Bar
 #logout-button:hover {
     background-color: #d4a72c;
     color: #1e3a5f;
+}
+
+/* Navigation Notification Bell */
+#notification-bell {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+#notification-bell:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+#notification-bell:focus-visible {
+    outline: 3px solid #d4af37;
+    outline-offset: 3px;
+}
+
+#notification-bell[hidden] {
+    display: none;
 }
 
 /* ===============================
@@ -326,10 +351,6 @@ footer {
 
 .footer-links a {
     color: #cccccc;
-}
-
-.footer-links a {
-    color: #cccccc;
     font-size: 16px;
     font-weight: normal;
     line-height: 1.6;
@@ -379,7 +400,7 @@ Mobile / Responsive Design
     .nav-links {
         flex-wrap: wrap;
         justify-content: center;
-        column-gap: 20px;
+        column-gap: 12px;
         row-gap: 8px;
     }
 
@@ -400,10 +421,6 @@ Mobile / Responsive Design
         padding: 12px 20px;
     }
     
-    .skills-container{
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
     .steps {
         flex-direction: column;
         align-items: center;
@@ -413,10 +430,6 @@ Mobile / Responsive Design
         flex-direction: column;
     }
 
-}
-
-body {
-    background-color: #fff8d6;
 }
 
 /* ===============================
@@ -712,7 +725,7 @@ border: 1px solid #a5d6a7;
     max-width: 900px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4,1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
 }
 
@@ -731,6 +744,7 @@ border: 1px solid #a5d6a7;
     font-size: 17px;
     text-align: center;
     transition: 0.2s;
+    cursor: pointer;
 }
 
 .browse-skill-card:hover {
@@ -869,7 +883,7 @@ border: 1px solid #a5d6a7;
 #signup-result.error {
     background-color: #fdecea;
     color: #b3261e;
-    border: 1px solid #f5c2c0
+    border: 1px solid #f5c2c0;
 }
 
 /* ===============================
@@ -1210,15 +1224,21 @@ border: 1px solid #a5d6a7;
 ===================================== */
 
 .notification-count {
-    display: inline-block;
-    background-color: #1e3a5f;
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 2px 5px;
+    background-color: #b42318;
     color: #ffffff;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 4px 9px;
     border-radius: 50px;
-    margin-left: 8px;
-    vertical-align: middle;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
 }
 
 .notification-count[hidden] {
@@ -1456,4 +1476,327 @@ border: 1px solid #a5d6a7;
 .remove-skill-button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+/* Small Mobile Screens */
+@media (max-width: 480px) {
+    .skills-container {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* My Connections - Message Button */
+.message-connection-button {
+    background-color: #1e3a5f;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.message-connection-button:hover {
+    background-color: #d4a72c;
+    color: #1e3a5f;
+}
+
+.message-connection-button:focus-visible {
+    outline: 3px solid #d4af37;
+    outline-offset: 3px;
+}
+
+/* Messages Page - Send Message Button */
+#send-message-button {
+    background-color: #1e3a5f;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#send-message-button:hover {
+    background-color: #d4a72c;
+    color: #1e3a5f;
+}
+
+#send-message-button:focus-visible {
+    outline: 3px solid #d4af37;
+    outline-offset: 3px;
+}
+
+#send-message-button:disabled {
+    background-color: #cccccc;
+    color: #555555;
+    cursor: not-allowed;
+}
+
+/* =====================================
+   Mutual Skill Match Indicator
+   ===================================== */
+
+.mutual-match-badge {
+    display: block;
+    width: fit-content;
+    margin: 8px auto 0;
+    padding: 5px 10px;
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    border: 1px solid #a5d6a7;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* =====================================
+   Browse Skills Search and Pagination
+   ===================================== */
+
+.browse-skills-search {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto 15px;
+}
+
+.browse-skills-search label {
+    color: #1d3659;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+#browse-skills-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #ffffff;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+#browse-skills-search:focus {
+    outline: 2px solid #1d3659;
+    outline-offset: 2px;
+}
+
+/* Browse Skills Pagination */
+
+.skills-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.skills-pagination button {
+    min-width: 100px;
+    padding: 10px 20px;
+    background-color: #1d3659;
+    color: #ffffff;
+    border: 1px solid #1d3659;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.skills-pagination button:hover:not(:disabled) {
+    background-color: #d4af37;
+    border-color: #d4af37;
+    color: #1d3659;
+}
+
+.skills-pagination button:disabled {
+    background-color: #e2e2e2;
+    color: #777777;
+    border-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#skills-page-info {
+    color: #1d3659;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Browse Skills Result Counter */
+
+#skills-result-count {
+    color: #555555;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+    margin: 10px 0 25px;
+}
+
+/* Browse Skills Empty Results */
+
+.no-skills-message {
+    grid-column: 1 / -1;
+    width: 100%;
+    padding: 25px 15px;
+    box-sizing: border-box;
+    color: #555555;
+    font-size: 1rem;
+    text-align: center;
+}
+
+/* ===============================
+   Contact Page
+   =============================== */
+
+.contact-section {
+    padding: 60px 20px;
+}
+
+.contact-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.contact-content h1 {
+    color: #1d3659;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.contact-content > p {
+    color: #555555;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.contact-form label {
+    color: #1d3659;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: 2px solid #d4af37;
+    outline-offset: 2px;
+    border-color: #1d3659;
+}
+
+.contact-form textarea {
+    resize: vertical;
+    min-height: 140px;
+}
+
+.contact-form button {
+    background-color: #1d3659;
+    color: #ffffff;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease,
+                color 0.2s ease;
+}
+
+.contact-form button:hover {
+    background-color: #d4af37;
+    color: #1d3659;
+}
+
+/* Contact Page - Mobile Responsiveness */
+
+@media (max-width: 600px) {
+
+    .contact-section {
+        padding: 40px 15px;
+    }
+
+    .contact-content h1 {
+        font-size: 1.75rem;
+    }
+
+    .contact-form {
+        padding: 20px;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+        font-size: 1rem;
+    }
+
+}
+
+/* Contact Form Validation Feedback */
+
+#contact-result:not(:empty) {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+#contact-result.error {
+    color: #b91c1c;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+#contact-result.success {
+    color: #166534;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+/* Footer Navigation Hover Effect */
+
+.footer-links a {
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+    color: #d4af37;
+    text-decoration: underline;
 }

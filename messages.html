@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Messages | SkillSwap</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- SkillSwap browser tab icon -->
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+
+</head>
+
+<body>
+
+    <main>
+        <section class="user-dashboard profile-page">
+            <div class="dashboard-content">
+
+                <a href="connections.html" class="back-dashboard-link">
+                    ← Back to My Connections
+                </a>
+
+                <h1>Messages</h1>
+
+                <p>
+                    Communicate with your connections and
+                    coordinate your skill exchanges.
+                </p>
+
+                <!-- SkillSwap Messaging Area -->
+                <div id="messaging-section" class="dashboard-profile">
+
+                    <h2 id="messaging-title">Select a Conversation</h2>
+
+                    <div id="messages-list" aria-live="polite"></div>
+
+                    <form id="message-form">
+
+                        <label for="message-input">Your Message</label>
+
+                        <textarea
+                            id="message-input"
+                            rows="3"
+                            maxlength="1000"
+                            placeholder="Type your message here..."
+                            required
+                        ></textarea>
+
+                        <button type="submit" id="send-message-button">
+                            Send Message
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script src="js/messages.js"></script>
+
+</body>
+</html>

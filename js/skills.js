@@ -61,6 +61,13 @@ const skillsMessage =
         ? "<p class='skills-notice'>You haven't added your skills yet. Click Edit Skills to get started.</p>"
         : "";
 
+// Escape user-provided content before displaying it as HTML
+function escapeHTML(value) {
+    const element = document.createElement("div");
+    element.textContent = String(value ?? "");
+    return element.innerHTML;
+}
+
 // Display saved skills
 dashboardSkills.innerHTML = `
     <h3>My Skills</h3>
@@ -73,7 +80,7 @@ dashboardSkills.innerHTML = `
             ${currentSkills.teachSkills
                 .map((skill, index) => `
                     <li>
-                        ${skill}
+                        ${escapeHTML(skill)}
                         <button
                             type="button"
                             class="remove-skill-button"
@@ -90,7 +97,7 @@ dashboardSkills.innerHTML = `
 
     <p>
         <strong>Skill I Want to Learn:</strong>
-        ${currentSkills.learnSkill}
+        ${escapeHTML(currentSkills.learnSkill)}
     </p>
 `;
 
@@ -160,8 +167,7 @@ editSkillsButton.addEventListener("click", function () {
 
     // Keep the new teaching skill field empty
     document.getElementById("edit-teach-skill").value = "";
-        currentSkills.teachSkill === "Not added yet" ? "" : currentSkills.teachSkill;
-
+        
     document.getElementById("edit-learn-skill").value =
         currentSkills.learnSkill === "Not added yet" ? "" : currentSkills.learnSkill;
 
@@ -174,11 +180,13 @@ editSkillsButton.addEventListener("click", function () {
         const teachSkill = document.getElementById("edit-teach-skill").value.trim();
         const learnSkill = document.getElementById("edit-learn-skill").value.trim();
 
+        // Require at least one teaching or learning skill before saving.
         if (!teachSkill && !learnSkill) {
             alert("Please enter a teaching skill or a learning skill.");
             return;
         }
 
+        // Add a teaching skill only if it does not already exist.
         if (teachSkill) {
             const alreadyExists = currentSkills.teachSkills.some(
                 skill => skill.toLowerCase() === teachSkill.toLowerCase()
@@ -189,6 +197,7 @@ editSkillsButton.addEventListener("click", function () {
             }
         }
 
+        // Update the learning preference when a new value is provided.
         if (learnSkill) {
             currentSkills.learnSkill = learnSkill;
         }
@@ -210,7 +219,7 @@ editSkillsButton.addEventListener("click", function () {
         // Keep the original field for compatibility with My Profile
         savedProfile.teachSkill = currentSkills.teachSkills[0] || "";
 
-        // Preserve the existing learning skill
+        // Save the current learning skill preference.
         savedProfile.learnSkill = currentSkills.learnSkill;
 
         // Save the updated profile
